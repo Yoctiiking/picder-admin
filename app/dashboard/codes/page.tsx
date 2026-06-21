@@ -212,86 +212,100 @@ export default function CodesPage() {
                 <p className="text-white/60">Chargement...</p>
             ) : (
                 <>
-                    {/* ← nouvelle barre de recherche */}
-                    <div className="mb-4">
-                        <input
-                            type="text"
-                            placeholder="Rechercher un code..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full max-w-sm rounded-lg border border-white/10 bg-[#0f3460] px-4 py-2 text-white placeholder-white/40 outline-none"
-                        />
-                    </div>
+                    <>
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                placeholder="Rechercher un code..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full max-w-sm rounded-lg border border-white/10 bg-[#0f3460] px-4 py-2 text-white placeholder-white/40 outline-none"
+                            />
+                        </div>
 
-                    <div className="overflow-x-auto rounded-xl bg-[#16213e]">
-                        <table className="w-full text-left text-white">
-                            <thead>
-                                <tr className="border-b border-white/10 text-sm text-white/60">
-                                    <th
-                                        className="cursor-pointer select-none p-4 hover:text-white"
-                                        onClick={() => handleSort("code")}
-                                    >
-                                        Code{sortIndicator("code")}
-                                    </th>
-                                    <th
-                                        className="cursor-pointer select-none p-4 hover:text-white"
-                                        onClick={() => handleSort("durationDays")}
-                                    >
-                                        Durée{sortIndicator("durationDays")}
-                                    </th>
-                                    <th
-                                        className="cursor-pointer select-none p-4 hover:text-white"
-                                        onClick={() => handleSort("usedCount")}
-                                    >
-                                        Usages{sortIndicator("usedCount")}
-                                    </th>
-                                    <th
-                                        className="cursor-pointer select-none p-4 hover:text-white"
-                                        onClick={() => handleSort("isActive")}
-                                    >
-                                        Statut{sortIndicator("isActive")}
-                                    </th>
-                                    <th className="p-4">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredAndSortedCodes.map((c) => (
-                                    <tr key={c.id} className="border-b border-white/5">
-                                        <td className="p-4 font-mono">{c.code}</td>
-                                        <td className="p-4">{c.durationDays} jours</td>
-                                        <td className="p-4">
-                                            {c.usedCount} / {c.maxUses === -1 ? "∞" : c.maxUses}
-                                        </td>
-                                        <td className="p-4">
-                                            <span
-                                                className={`rounded-full px-3 py-1 text-xs ${c.isActive
-                                                    ? "bg-green-500/20 text-green-400"
-                                                    : "bg-red-500/20 text-red-400"
-                                                    }`}
-                                            >
-                                                {c.isActive ? "Actif" : "Inactif"}
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <button
-                                                onClick={() => toggleActive(c)}
-                                                className="text-sm text-white/60 hover:text-white"
-                                            >
-                                                {c.isActive ? "Désactiver" : "Activer"}
-                                            </button>
-                                        </td>
+                        {/* ← Tableau, visible uniquement à partir de md (768px) */}
+                        <div className="hidden overflow-x-auto rounded-xl bg-[#16213e] md:block">
+                            <table className="w-full text-left text-white">
+                                <thead>
+                                    <tr className="border-b border-white/10 text-sm text-white/60">
+                                        <th className="cursor-pointer select-none p-4 hover:text-white" onClick={() => handleSort("code")}>
+                                            Code{sortIndicator("code")}
+                                        </th>
+                                        <th className="cursor-pointer select-none p-4 hover:text-white" onClick={() => handleSort("durationDays")}>
+                                            Durée{sortIndicator("durationDays")}
+                                        </th>
+                                        <th className="cursor-pointer select-none p-4 hover:text-white" onClick={() => handleSort("usedCount")}>
+                                            Usages{sortIndicator("usedCount")}
+                                        </th>
+                                        <th className="cursor-pointer select-none p-4 hover:text-white" onClick={() => handleSort("isActive")}>
+                                            Statut{sortIndicator("isActive")}
+                                        </th>
+                                        <th className="p-4">Action</th>
                                     </tr>
-                                ))}
-                                {filteredAndSortedCodes.length === 0 && (
-                                    <tr>
-                                        <td colSpan={5} className="p-4 text-center text-white/40">
-                                            {searchTerm ? "Aucun résultat" : "Aucun code créé pour l'instant"}
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {filteredAndSortedCodes.map((c) => (
+                                        <tr key={c.id} className="border-b border-white/5">
+                                            <td className="p-4 font-mono">{c.code}</td>
+                                            <td className="p-4">{c.durationDays} jours</td>
+                                            <td className="p-4">
+                                                {c.usedCount} / {c.maxUses === -1 ? "∞" : c.maxUses}
+                                            </td>
+                                            <td className="p-4">
+                                                <span className={`rounded-full px-3 py-1 text-xs ${c.isActive ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                                                    {c.isActive ? "Actif" : "Inactif"}
+                                                </span>
+                                            </td>
+                                            <td className="p-4">
+                                                <button
+                                                    onClick={() => toggleActive(c)}
+                                                    className="w-full rounded-lg bg-white/5 py-2 text-center text-sm text-white/70 hover:bg-white/10 hover:text-white"
+                                                >
+                                                    {c.isActive ? "Désactiver" : "Activer"}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {filteredAndSortedCodes.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="p-4 text-center text-white/40">
+                                                {searchTerm ? "Aucun résultat" : "Aucun code créé pour l'instant"}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* ← Cartes, visibles uniquement en dessous de md */}
+                        <div className="flex flex-col gap-3 md:hidden">
+                            {filteredAndSortedCodes.map((c) => (
+                                <div key={c.id} className="rounded-xl bg-[#16213e] p-4">
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <span className="font-mono text-lg text-white">{c.code}</span>
+                                        <span className={`rounded-full px-3 py-1 text-xs ${c.isActive ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                                            {c.isActive ? "Actif" : "Inactif"}
+                                        </span>
+                                    </div>
+                                    <div className="mb-1 text-sm text-white/60">Durée : {c.durationDays} jours</div>
+                                    <div className="mb-3 text-sm text-white/60">
+                                        Usages : {c.usedCount} / {c.maxUses === -1 ? "∞" : c.maxUses}
+                                    </div>
+                                    <button
+                                        onClick={() => toggleActive(c)}
+                                        className="w-full rounded-lg bg-white/5 py-2 text-center text-sm text-white/70 hover:bg-white/10 hover:text-white"
+                                    >
+                                        {c.isActive ? "Désactiver" : "Activer"}
+                                    </button>
+                                </div>
+                            ))}
+                            {filteredAndSortedCodes.length === 0 && (
+                                <p className="p-4 text-center text-white/40">
+                                    {searchTerm ? "Aucun résultat" : "Aucun code créé pour l'instant"}
+                                </p>
+                            )}
+                        </div>
+                    </>
                 </>
             )}
         </div>
