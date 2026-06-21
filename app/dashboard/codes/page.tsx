@@ -35,6 +35,7 @@ export default function CodesPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [sortKey, setSortKey] = useState<SortKey>("code");
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+    const [showSortMenu, setShowSortMenu] = useState(false);
 
     // Champs du formulaire de création
     const [newCode, setNewCode] = useState("");
@@ -213,7 +214,7 @@ export default function CodesPage() {
             ) : (
                 <>
                     <>
-                        <div className="mb-4">
+                        <div className="mb-4 flex items-center gap-2">
                             <input
                                 type="text"
                                 placeholder="Rechercher un code..."
@@ -221,6 +222,52 @@ export default function CodesPage() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full max-w-sm rounded-lg border border-white/10 bg-[#0f3460] px-4 py-2 text-white placeholder-white/40 outline-none"
                             />
+                            <div className="relative md:hidden">
+                                <button
+                                    onClick={() => setShowSortMenu((s) => !s)}
+                                    className={`rounded-lg border px-3 py-3 transition-colors ${sortKey !== "code" || sortDirection !== "asc" ? "border-[#e94560]/50 bg-[#e94560]/10 text-[#e94560]" : "border-white/10 bg-[#0f3460] text-white/70"}`}
+                                >
+                                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                        <line x1="3" y1="6" x2="21" y2="6" />
+                                        <line x1="7" y1="12" x2="17" y2="12" />
+                                        <line x1="11" y1="18" x2="13" y2="18" />
+                                    </svg>
+                                </button>
+                                {showSortMenu && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setShowSortMenu(false)} />
+                                        <div className="absolute right-0 top-full z-50 mt-1 min-w-44 overflow-hidden rounded-xl border border-white/10 bg-[#16213e] shadow-xl">
+                                            {(
+                                                [
+                                                    { key: "code", label: "Code" },
+                                                    { key: "durationDays", label: "Durée" },
+                                                    { key: "usedCount", label: "Usages" },
+                                                    { key: "isActive", label: "Statut" },
+                                                ] as { key: SortKey; label: string }[]
+                                            ).map((opt) => (
+                                                <button
+                                                    key={opt.key}
+                                                    onClick={() => {
+                                                        if (sortKey === opt.key) {
+                                                            setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+                                                        } else {
+                                                            setSortKey(opt.key);
+                                                            setSortDirection("asc");
+                                                        }
+                                                        setShowSortMenu(false);
+                                                    }}
+                                                    className={`flex w-full items-center justify-between px-4 py-2.5 text-sm ${sortKey === opt.key ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                                                >
+                                                    {opt.label}
+                                                    {sortKey === opt.key && (
+                                                        <span className="text-xs opacity-60">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         {/* ← Tableau, visible uniquement à partir de md (768px) */}
