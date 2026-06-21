@@ -6,6 +6,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { auth, db } from "@/lib/firebase";
+import type { Metadata } from "next";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
