@@ -51,6 +51,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard/users" className="text-white/70 hover:text-white">
             Utilisateurs
           </Link>
+          <Link href="/dashboard/admins" className="text-white/70 hover:text-white">
+            Admins
+          </Link>
           <button
             onClick={() => signOut(auth).then(() => router.push("/login"))}
             className="text-white/70 hover:text-red-400"
