@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     collection,
     setDoc,
@@ -24,9 +24,17 @@ type PromoCode = {
     createdAt: Timestamp | null;
 };
 
+type SortKey = "code" | "durationDays" | "usedCount" | "isActive";
+type SortDirection = "asc" | "desc";
+
 export default function CodesPage() {
     const [codes, setCodes] = useState<PromoCode[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Recherche et tri
+    const [searchTerm, setSearchTerm] = useState("");
+    const [sortKey, setSortKey] = useState<SortKey>("code");
+    const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
     // Champs du formulaire de création
     const [newCode, setNewCode] = useState("");
@@ -90,6 +98,51 @@ export default function CodesPage() {
             isActive: !code.isActive,
         });
         await loadCodes();
+    }
+
+    // Calcul de la liste filtrée et triée
+    const filteredAndSortedCodes = useMemo(() => {
+        let result = codes;
+
+        if (searchTerm.trim()) {
+            const term = searchTerm.trim().toUpperCase();
+            result = result.filter((c) => c.code.includes(term));
+        }
+
+        result = [...result].sort((a, b) => {
+            let comparison = 0;
+            switch (sortKey) {
+                case "code":
+                    comparison = a.code.localeCompare(b.code);
+                    break;
+                case "durationDays":
+                    comparison = a.durationDays - b.durationDays;
+                    break;
+                case "usedCount":
+                    comparison = a.usedCount - b.usedCount;
+                    break;
+                case "isActive":
+                    comparison = Number(a.isActive) - Number(b.isActive);
+                    break;
+            }
+            return sortDirection === "asc" ? comparison : -comparison;
+        });
+
+        return result;
+    }, [codes, searchTerm, sortKey, sortDirection]);
+
+    function handleSort(key: SortKey) {
+        if (sortKey === key) {
+            setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+        } else {
+            setSortKey(key);
+            setSortDirection("asc");
+        }
+    }
+
+    function sortIndicator(key: SortKey) {
+        if (sortKey !== key) return "";
+        return sortDirection === "asc" ? " ↑" : " ↓";
     }
 
     return (
@@ -158,55 +211,88 @@ export default function CodesPage() {
             {loading ? (
                 <p className="text-white/60">Chargement...</p>
             ) : (
-                <div className="overflow-x-auto rounded-xl bg-[#16213e]">
-                    <table className="w-full text-left text-white">
-                        <thead>
-                            <tr className="border-b border-white/10 text-sm text-white/60">
-                                <th className="p-4">Code</th>
-                                <th className="p-4">Durée</th>
-                                <th className="p-4">Usages</th>
-                                <th className="p-4">Statut</th>
-                                <th className="p-4">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {codes.map((c) => (
-                                <tr key={c.id} className="border-b border-white/5">
-                                    <td className="p-4 font-mono">{c.code}</td>
-                                    <td className="p-4">{c.durationDays} jours</td>
-                                    <td className="p-4">
-                                        {c.usedCount} / {c.maxUses === -1 ? "∞" : c.maxUses}
-                                    </td>
-                                    <td className="p-4">
-                                        <span
-                                            className={`rounded-full px-3 py-1 text-xs ${c.isActive
+                <>
+                    {/* ← nouvelle barre de recherche */}
+                    <div className="mb-4">
+                        <input
+                            type="text"
+                            placeholder="Rechercher un code..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full max-w-sm rounded-lg border border-white/10 bg-[#0f3460] px-4 py-2 text-white placeholder-white/40 outline-none"
+                        />
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl bg-[#16213e]">
+                        <table className="w-full text-left text-white">
+                            <thead>
+                                <tr className="border-b border-white/10 text-sm text-white/60">
+                                    <th
+                                        className="cursor-pointer select-none p-4 hover:text-white"
+                                        onClick={() => handleSort("code")}
+                                    >
+                                        Code{sortIndicator("code")}
+                                    </th>
+                                    <th
+                                        className="cursor-pointer select-none p-4 hover:text-white"
+                                        onClick={() => handleSort("durationDays")}
+                                    >
+                                        Durée{sortIndicator("durationDays")}
+                                    </th>
+                                    <th
+                                        className="cursor-pointer select-none p-4 hover:text-white"
+                                        onClick={() => handleSort("usedCount")}
+                                    >
+                                        Usages{sortIndicator("usedCount")}
+                                    </th>
+                                    <th
+                                        className="cursor-pointer select-none p-4 hover:text-white"
+                                        onClick={() => handleSort("isActive")}
+                                    >
+                                        Statut{sortIndicator("isActive")}
+                                    </th>
+                                    <th className="p-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredAndSortedCodes.map((c) => (
+                                    <tr key={c.id} className="border-b border-white/5">
+                                        <td className="p-4 font-mono">{c.code}</td>
+                                        <td className="p-4">{c.durationDays} jours</td>
+                                        <td className="p-4">
+                                            {c.usedCount} / {c.maxUses === -1 ? "∞" : c.maxUses}
+                                        </td>
+                                        <td className="p-4">
+                                            <span
+                                                className={`rounded-full px-3 py-1 text-xs ${c.isActive
                                                     ? "bg-green-500/20 text-green-400"
                                                     : "bg-red-500/20 text-red-400"
-                                                }`}
-                                        >
-                                            {c.isActive ? "Actif" : "Inactif"}
-                                        </span>
-                                    </td>
-                                    <td className="p-4">
-                                        <button
-                                            onClick={() => toggleActive(c)}
-                                            className="text-sm text-white/60 hover:text-white"
-                                        >
-                                            {c.isActive ? "Désactiver" : "Activer"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            {codes.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="p-4 text-center text-white/40">
-                                        Aucun code créé pour l'instant
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                                    }`}
+                                            >
+                                                {c.isActive ? "Actif" : "Inactif"}
+                                            </span>
+                                        </td>
+                                        <td className="p-4">
+                                            <button
+                                                onClick={() => toggleActive(c)}
+                                                className="text-sm text-white/60 hover:text-white"
+                                            >
+                                                {c.isActive ? "Désactiver" : "Activer"}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredAndSortedCodes.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="p-4 text-center text-white/40">
+                                            {searchTerm ? "Aucun résultat" : "Aucun code créé pour l'instant"}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
             )}
         </div>
     );
